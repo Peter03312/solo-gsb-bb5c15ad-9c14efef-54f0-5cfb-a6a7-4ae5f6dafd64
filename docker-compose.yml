@@ -1,0 +1,22 @@
+services:
+  trace-service:
+    build: .
+    image: lab-trace-service:latest
+    container_name: lab-trace-service
+    ports:
+      - "8000:8000"
+    environment:
+      # SQLite 数据库文件路径（容器内），由命名卷持久化
+      TRACE_DB_PATH: /data/trace.db
+    volumes:
+      - trace-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  trace-data:
